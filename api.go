@@ -6,27 +6,22 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/PawelK2012/go-crud/models"
 	"github.com/gorilla/mux"
 )
 
 type APIServer struct {
 	listenAddr string
+	store      Store
 }
 
 type ApiError struct {
 	Error string `json:"error"`
 }
 
-// type Menu struct {
-// 	Breakfast string `json:"breakfast"`
-// 	Lunch     string `json:"lunch"`
-// 	Dinner    string `json:"dinner"`
-// }
-
-func NewAPIServer(listenAddr string) *APIServer {
+func NewAPIServer(listenAddr string, store Store) *APIServer {
 	return &APIServer{
 		listenAddr: listenAddr,
+		store:      store,
 	}
 }
 
@@ -57,8 +52,8 @@ func (s *APIServer) Run() {
 
 func (s *APIServer) handleMenu(w http.ResponseWriter, r *http.Request) error {
 	if r.Method == "GET" {
-		log.Println("orders API")
-		return s.handleGetOrderByID(w, r)
+		log.Println("menu API")
+		return s.handleGetMenuByID(w, r)
 	}
 
 	// if r.Method == "POST" {
@@ -68,7 +63,15 @@ func (s *APIServer) handleMenu(w http.ResponseWriter, r *http.Request) error {
 
 }
 
-func (s *APIServer) handleGetOrderByID(w http.ResponseWriter, r *http.Request) error {
-	menu := models.Menu{Breakfast: "Scrambled eggs", Lunch: "Burgers && Fires", Dinner: "Coco jubmbo"}
+func (s *APIServer) handleGetMenuByID(w http.ResponseWriter, r *http.Request) error {
+	// for simplicity of this example we have only 1 menu
+	menuId := 1
+	menu, err := s.store.GetMenu(menuId)
+	if err != nil {
+		formattedErr := fmt.Errorf("menu not found %s", err)
+		log.Print(formattedErr)
+		return formattedErr
+
+	}
 	return WriteJSON(w, http.StatusOK, menu)
 }
