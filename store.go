@@ -16,7 +16,8 @@ var (
 )
 
 type Store interface {
-	GetMenu(id int) (*models.Menu, error)
+	GetNoteById(int) (*models.Note, error)
+	CreateNote(*models.Note) error
 }
 
 type PostgresStore struct {
@@ -41,61 +42,63 @@ func NewPostgressStore() (*PostgresStore, error) {
 }
 
 func (s *PostgresStore) Init() error {
-	return s.CreateMenuTable()
+	return s.CreateNoteTable()
 }
 
-func (s *PostgresStore) CreateMenuTable() error {
-	query := `CREATE TABLE IF NOT EXISTS menu (
+func (s *PostgresStore) CreateNoteTable() error {
+	query := `create table if not exists notes (
 		id serial primary key,
-		menu_name varchar(50) DEFAULT 'Standard',
-		breakfast varchar(50) DEFAULT 'Full Irish breakfast',
-		large_breakfast varchar(50),
-		lunch varchar(50),
-		large_lunch varchar(50),
-		dinner varchar(50),
-		large_dinner varchar(50),
-		kids_menu varchar(50),
-		desert varchar(50),
-		drink varchar(50),
-		sides varchar(50),
+		author varchar(200),
+		title varchar(250),
+		description varchar(5000),
+		tags varchar(250),
 		created_at timestamp
 	)`
 	_, err := s.db.Exec(query)
 	return err
 }
 
-func (s *PostgresStore) GetMenu(id int) (*models.Menu, error) {
-	// For simplicity of this example we have only 1 menu
-	// I could easly create more menus ie Lunch, set menu, evening menu etc.
-	// rows, err := s.db.Query(`select * from menu where id = $1`, id)
-	rows, err := s.db.Query(`select * from menu`)
+func (s *PostgresStore) CreateNote(n *models.Note) error {
+	query := `insert into notes
+	(author, title, description, tags, created_at)
+	values ($1, $2, $3, $4, $5)`
 
+	resp, err := s.db.Query(query, n.Author, n.Title, n.Desc, n.Tags, n.CreatedAt)
+	if err != nil {
+		return err
+	}
+	fmt.Println("resp: ", resp)
+	return nil
+}
+
+func (s *PostgresStore) GetNoteById(id int) (*models.Note, error) {
+
+	rows, err := s.db.Query(`select * from note`)
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
-		return scanIntoMenu(rows)
+		// return scanIntoMenu(rows)
 	}
 
 	return nil, fmt.Errorf("menu %d not found", id)
 }
 
-func scanIntoMenu(rows *sql.Rows) (*models.Menu, error) {
-	menu := new(models.Menu)
-	err := rows.Scan(
-		&menu.ID,
-		&menu.MenuName,
-		&menu.Breakfast,
-		&menu.LargeBreakfast,
-		&menu.Lunch,
-		&menu.LargeLunch,
-		&menu.Dinner,
-		&menu.LargeDinner,
-		&menu.KidsMenu,
-		&menu.Desert,
-		&menu.Drink,
-		&menu.Sides)
+// func scanIntoMenu(rows *sql.Rows) (*models.Menu, error) {
+// 	menu := new(models.Menu)
+// 	err := rows.Scan(
+// 		&menu.ID,
+// 		&menu.MenuName,
+// 		&menu.Breakfast,
+// 		&menu.LargeBreakfast,
+// 		&menu.Lunch,
+// 		&menu.LargeLunch,
+// 		&menu.Dinner,
+// 		&menu.LargeDinner,
+// 		&menu.KidsMenu,
+// 		&menu.Desert,
+// 		&menu.Drink,
+// 		&menu.Sides)
 
-	log.Print("===>>. %+v\n", menu)
-	return menu, err
-}
+// 	return menu, err
+// }

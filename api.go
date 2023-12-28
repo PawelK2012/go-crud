@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/PawelK2012/go-crud/models"
 	"github.com/gorilla/mux"
 )
 
@@ -45,28 +46,29 @@ func WriteJSON(w http.ResponseWriter, status int, v any) error {
 
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
-	router.HandleFunc("/orders", makeHTTPHandleFunc(s.handleMenu))
+	router.HandleFunc("/notes", makeHTTPHandleFunc(s.handleMenu))
 	log.Println("server running on port: ", s.listenAddr)
 	http.ListenAndServe(s.listenAddr, router)
 }
 
 func (s *APIServer) handleMenu(w http.ResponseWriter, r *http.Request) error {
+
 	if r.Method == "GET" {
-		log.Println("menu API")
+		log.Println("GET note API")
 		return s.handleGetMenuByID(w, r)
 	}
 
-	// if r.Method == "POST" {
-	// 	return s.handleCreateAccount(w, r)
-	// }
+	if r.Method == "POST" {
+		return s.handleCreateNote(w, r)
+	}
 	return fmt.Errorf("method not allowed %s", r.Method)
 
 }
 
 func (s *APIServer) handleGetMenuByID(w http.ResponseWriter, r *http.Request) error {
-	// for simplicity of this example we have only 1 menu
+
 	menuId := 1
-	menu, err := s.store.GetMenu(menuId)
+	menu, err := s.store.GetNoteById(menuId)
 	if err != nil {
 		formattedErr := fmt.Errorf("menu not found %s", err)
 		log.Print(formattedErr)
@@ -74,4 +76,18 @@ func (s *APIServer) handleGetMenuByID(w http.ResponseWriter, r *http.Request) er
 
 	}
 	return WriteJSON(w, http.StatusOK, menu)
+}
+
+func (s *APIServer) handleCreateNote(w http.ResponseWriter, r *http.Request) error {
+	// note := models.Note{}
+	note := new(models.Note)
+	if err := json.NewDecoder(r.Body).Decode(note); err != nil {
+		return err
+	}
+
+	newNote := models.NewNote(note.Author, note.Title, note.Desc, note.Tags)
+	if err := s.store.CreateNote(newNote); err != nil {
+		return err
+	}
+	return WriteJSON(w, http.StatusOK, note)
 }
