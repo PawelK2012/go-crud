@@ -1,6 +1,7 @@
-package main
+package database
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -15,16 +16,11 @@ var (
 	DB_PASSWORD = os.Getenv("POSTGRES_PASSWORD_CRUDAPP")
 )
 
-type Store interface {
-	GetNoteById(int) (*models.Note, error)
-	CreateNote(*models.Note) error
-}
-
-type PostgresStore struct {
+type Postgres struct {
 	db *sql.DB
 }
 
-func NewPostgressStore() (*PostgresStore, error) {
+func NewPostgressClient() (ClientInterface, error) {
 	connStr := fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", DB_USER, DB_USER, DB_PASSWORD)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
@@ -36,16 +32,16 @@ func NewPostgressStore() (*PostgresStore, error) {
 		return nil, err
 	}
 
-	return &PostgresStore{
+	return &Postgres{
 		db: db,
-	}, nil
+	}, err
 }
 
-func (s *PostgresStore) Init() error {
+func (s *Postgres) Init(ctx context.Context) error {
 	return s.CreateNoteTable()
 }
 
-func (s *PostgresStore) CreateNoteTable() error {
+func (s *Postgres) CreateNoteTable() error {
 	query := `create table if not exists notes (
 		id serial primary key,
 		author varchar(200),
@@ -58,20 +54,20 @@ func (s *PostgresStore) CreateNoteTable() error {
 	return err
 }
 
-func (s *PostgresStore) CreateNote(n *models.Note) error {
+func (s *Postgres) CreateNote(ctx context.Context, n *models.Note) error {
 	query := `insert into notes
 	(author, title, description, tags, created_at)
 	values ($1, $2, $3, $4, $5)`
 
-	resp, err := s.db.Query(query, n.Author, n.Title, n.Desc, n.Tags, n.CreatedAt)
+	_, err := s.db.Query(query, n.Author, n.Title, n.Desc, n.Tags, n.CreatedAt)
 	if err != nil {
 		return err
 	}
-	fmt.Println("resp: ", resp)
+	// log.Printf("resp:  %+v\n", resp())
 	return nil
 }
 
-func (s *PostgresStore) GetNoteById(id int) (*models.Note, error) {
+func (s *Postgres) GetNoteById(ctx context.Context, id int) (*models.Note, error) {
 
 	rows, err := s.db.Query(`select * from note`)
 	if err != nil {

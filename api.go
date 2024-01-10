@@ -7,22 +7,23 @@ import (
 	"net/http"
 
 	"github.com/PawelK2012/go-crud/models"
+	"github.com/PawelK2012/go-crud/repository"
 	"github.com/gorilla/mux"
 )
 
 type APIServer struct {
 	listenAddr string
-	store      Store
+	repository *repository.Repository
 }
 
 type ApiError struct {
 	Error string `json:"error"`
 }
 
-func NewAPIServer(listenAddr string, store Store) *APIServer {
+func NewAPIServer(listenAddr string, repository *repository.Repository) *APIServer {
 	return &APIServer{
 		listenAddr: listenAddr,
-		store:      store,
+		repository: repository,
 	}
 }
 
@@ -47,8 +48,11 @@ func WriteJSON(w http.ResponseWriter, status int, v any) error {
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
 	router.HandleFunc("/notes", makeHTTPHandleFunc(s.handleMenu))
+	err := http.ListenAndServe(s.listenAddr, router)
+	if err != nil {
+		panic(err)
+	}
 	log.Println("server running on port: ", s.listenAddr)
-	http.ListenAndServe(s.listenAddr, router)
 }
 
 func (s *APIServer) handleMenu(w http.ResponseWriter, r *http.Request) error {
@@ -59,6 +63,7 @@ func (s *APIServer) handleMenu(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if r.Method == "POST" {
+		log.Println("POST note API")
 		return s.handleCreateNote(w, r)
 	}
 	return fmt.Errorf("method not allowed %s", r.Method)
@@ -68,7 +73,7 @@ func (s *APIServer) handleMenu(w http.ResponseWriter, r *http.Request) error {
 func (s *APIServer) handleGetMenuByID(w http.ResponseWriter, r *http.Request) error {
 
 	menuId := 1
-	menu, err := s.store.GetNoteById(menuId)
+	menu, err := s.repository.Postgress.GetNoteById(r.Context(), menuId)
 	if err != nil {
 		formattedErr := fmt.Errorf("menu not found %s", err)
 		log.Print(formattedErr)
@@ -78,16 +83,16 @@ func (s *APIServer) handleGetMenuByID(w http.ResponseWriter, r *http.Request) er
 	return WriteJSON(w, http.StatusOK, menu)
 }
 
+// add r.Body validation
 func (s *APIServer) handleCreateNote(w http.ResponseWriter, r *http.Request) error {
-	// note := models.Note{}
-	note := new(models.Note)
+	note := &models.Note{}
 	if err := json.NewDecoder(r.Body).Decode(note); err != nil {
 		return err
 	}
 
 	newNote := models.NewNote(note.Author, note.Title, note.Desc, note.Tags)
-	if err := s.store.CreateNote(newNote); err != nil {
+	if err := s.repository.Postgress.CreateNote(r.Context(), newNote); err != nil {
 		return err
 	}
-	return WriteJSON(w, http.StatusOK, note)
+	return WriteJSON(w, http.StatusOK, newNote)
 }

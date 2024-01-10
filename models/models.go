@@ -5,7 +5,7 @@ import (
 )
 
 type Note struct {
-	Id        string    `json:"id"`
+	Id        string    `json:"id,omitempty"`
 	Author    string    `json:"author"`
 	Title     string    `json:"title"`
 	Desc      string    `json:"desc"`
