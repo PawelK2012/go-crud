@@ -27,10 +27,10 @@ func (client *PostgressClientMock) GetNoteById(ctx context.Context, id int) (*mo
 	return nil, nil
 }
 
-func (client *PostgressClientMock) Create(ctx context.Context, table string, note *models.Note) (int64, error) {
+func (client *PostgressClientMock) Create(ctx context.Context, note *models.Note) (int64, error) {
 	return 1, nil
 }
 
-func (client *PostgressClientMock) GetAll(ctx context.Context, table string) (*sql.Rows, error) {
+func (client *PostgressClientMock) GetAll(ctx context.Context) (*sql.Rows, error) {
 	return nil, nil
 }

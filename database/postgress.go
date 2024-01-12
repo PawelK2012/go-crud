@@ -16,7 +16,11 @@ var (
 	DB_PASSWORD = os.Getenv("POSTGRES_PASSWORD_CRUDAPP")
 )
 
-type Postgres struct {
+const (
+	NOTES_TBL = "notes"
+)
+
+type Postgress struct {
 	db *sql.DB
 }
 
@@ -32,12 +36,12 @@ func NewPostgressClient() (ClientInterface, error) {
 		return nil, err
 	}
 
-	return &Postgres{
+	return &Postgress{
 		db: db,
 	}, err
 }
 
-func (s *Postgres) Init(ctx context.Context) error {
+func (s *Postgress) Init(ctx context.Context) error {
 	query := `CREATE TABLE IF NOT EXISTS notes (
 		id SERIAL PRIMARY KEY,
 		author VARCHAR(200),
@@ -49,10 +53,10 @@ func (s *Postgres) Init(ctx context.Context) error {
 	_, err := s.db.ExecContext(ctx, query)
 	return err
 }
-func (s *Postgres) GetAll(ctx context.Context, table string) (*sql.Rows, error) {
+func (s *Postgress) GetAll(ctx context.Context) (*sql.Rows, error) {
 	var all map[string]interface{}
 	//all := ClientDBResult{}
-	query := `SELECT * FROM ` + table
+	query := `SELECT * FROM ` + NOTES_TBL
 	rows, err := s.db.QueryContext(ctx, query)
 	if err != nil {
 		log.Println("get all docs failed:", err)
@@ -75,9 +79,9 @@ func (s *Postgres) GetAll(ctx context.Context, table string) (*sql.Rows, error) 
 }
 
 // TODO: think about better approche for CREATE operations
-func (s *Postgres) Create(ctx context.Context, table string, n *models.Note) (int64, error) {
+func (s *Postgress) Create(ctx context.Context, n *models.Note) (int64, error) {
 	var id int64
-	query := `INSERT INTO ` + table + `
+	query := `INSERT INTO ` + NOTES_TBL + `
 	(author, title, description, tags, created_at)
 	VALUES ($1, $2, $3, $4, $5) RETURNING id`
 
@@ -91,7 +95,7 @@ func (s *Postgres) Create(ctx context.Context, table string, n *models.Note) (in
 	return id, nil
 }
 
-func (s *Postgres) GetNoteById(ctx context.Context, id int) (*models.Note, error) {
+func (s *Postgress) GetNoteById(ctx context.Context, id int) (*models.Note, error) {
 
 	rows, err := s.db.Query(`select * from note`)
 	if err != nil {

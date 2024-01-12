@@ -6,24 +6,24 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/PawelK2012/go-crud/database"
 	"github.com/PawelK2012/go-crud/models"
-	"github.com/PawelK2012/go-crud/repository"
 	"github.com/gorilla/mux"
 )
 
 type APIServer struct {
 	listenAddr string
-	repository *repository.Repository
+	db         database.ClientInterface
 }
 
 type ApiError struct {
 	Error string `json:"error"`
 }
 
-func NewAPIServer(listenAddr string, repository *repository.Repository) *APIServer {
+func NewAPIServer(listenAddr string, db database.ClientInterface) *APIServer {
 	return &APIServer{
 		listenAddr: listenAddr,
-		repository: repository,
+		db:         db,
 	}
 }
 
@@ -82,7 +82,7 @@ func (s *APIServer) handleNote(w http.ResponseWriter, r *http.Request) error {
 func (s *APIServer) handleGetMenuByID(w http.ResponseWriter, r *http.Request) error {
 
 	menuId := 1
-	menu, err := s.repository.Postgress.GetNoteById(r.Context(), menuId)
+	menu, err := s.db.GetNoteById(r.Context(), menuId)
 	if err != nil {
 		formattedErr := fmt.Errorf("menu not found %s", err)
 		log.Print(formattedErr)
@@ -101,16 +101,17 @@ func (s *APIServer) handleCreateNote(w http.ResponseWriter, r *http.Request) err
 	}
 
 	newNote := models.NewNote(note.Author, note.Title, note.Desc, note.Tags)
-	n, err := s.repository.CreateNote(r.Context(), newNote)
+	n, err := s.db.Create(r.Context(), newNote)
 	if err != nil {
 		return err
 	}
+	newNote.Id = n
 
-	return WriteJSON(w, http.StatusOK, n)
+	return WriteJSON(w, http.StatusOK, newNote)
 }
 
 func (s *APIServer) handleGetAllNotes(w http.ResponseWriter, r *http.Request) error {
-	n, err := s.repository.GetAllNotes(r.Context())
+	n, err := s.db.GetAll(r.Context())
 	if err != nil {
 		return err
 	}

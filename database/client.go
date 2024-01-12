@@ -20,8 +20,8 @@ var (
 type ClientInterface interface {
 	Init(ctx context.Context) error
 	GetNoteById(ctx context.Context, id int) (*models.Note, error)
-	Create(ctx context.Context, table string, note *models.Note) (int64, error)
-	GetAll(ctx context.Context, table string) (*sql.Rows, error)
+	Create(ctx context.Context, note *models.Note) (int64, error)
+	GetAll(ctx context.Context) (*sql.Rows, error)
 }
 
 type Document struct {
