@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/PawelK2012/go-crud/models"
 )
@@ -31,6 +30,6 @@ func (client *PostgressClientMock) Create(ctx context.Context, note *models.Note
 	return 1, nil
 }
 
-func (client *PostgressClientMock) GetAll(ctx context.Context) (*sql.Rows, error) {
+func (client *PostgressClientMock) GetAll(ctx context.Context) ([]models.Note, error) {
 	return nil, nil
 }

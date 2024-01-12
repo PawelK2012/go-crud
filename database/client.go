@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
 	"github.com/PawelK2012/go-crud/models"
@@ -21,7 +20,7 @@ type ClientInterface interface {
 	Init(ctx context.Context) error
 	GetNoteById(ctx context.Context, id int) (*models.Note, error)
 	Create(ctx context.Context, note *models.Note) (int64, error)
-	GetAll(ctx context.Context) (*sql.Rows, error)
+	GetAll(ctx context.Context) ([]models.Note, error)
 }
 
 type Document struct {

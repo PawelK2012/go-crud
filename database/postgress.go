@@ -53,9 +53,8 @@ func (s *Postgress) Init(ctx context.Context) error {
 	_, err := s.db.ExecContext(ctx, query)
 	return err
 }
-func (s *Postgress) GetAll(ctx context.Context) (*sql.Rows, error) {
-	var all map[string]interface{}
-	//all := ClientDBResult{}
+func (s *Postgress) GetAll(ctx context.Context) ([]models.Note, error) {
+
 	query := `SELECT * FROM ` + NOTES_TBL
 	rows, err := s.db.QueryContext(ctx, query)
 	if err != nil {
@@ -63,19 +62,15 @@ func (s *Postgress) GetAll(ctx context.Context) (*sql.Rows, error) {
 		return nil, err
 	}
 	defer rows.Close()
+	var all []models.Note
 	for rows.Next() {
-		//var s []string
-		if err := rows.Scan(all); err != nil {
-			log.Println("get all rows.Scan() error:", err)
+		var note models.Note
+		if err := rows.Scan(&note.Id, &note.Author, &note.Title, &note.Desc, &note.Tags, &note.CreatedAt); err != nil {
 			return nil, err
 		}
-		// all = append(all.Documents, Document{
-		// 	Id:         *createDocumentResponse.ID,
-		// 	Properties: document,
-		// })
+		all = append(all, note)
 	}
-	fmt.Printf("---> retrived rows 111 %+v\n", rows)
-	return rows, nil
+	return all, nil
 }
 
 // TODO: think about better approche for CREATE operations
@@ -91,7 +86,6 @@ func (s *Postgress) Create(ctx context.Context, n *models.Note) (int64, error) {
 		return id, err
 	}
 	n.Id = id
-	log.Printf("note id:%s was created", id)
 	return id, nil
 }
 
