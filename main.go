@@ -1,24 +1,21 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"os"
+
+	"github.com/PawelK2012/go-crud/database"
 )
 
 func main() {
-	store, err := NewPostgressStore()
+	db, err := database.NewPostgressClient()
 	if err != nil {
 		log.Fatal(err)
+		os.Exit(1)
 	}
 
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err := store.Init(); err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%+v\n", store)
+	log.Printf("%+v\n", db)
 
-	server := NewAPIServer(":3000", store)
+	server := NewAPIServer(":3000", db)
 	server.Run()
 }

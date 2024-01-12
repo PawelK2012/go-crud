@@ -6,23 +6,24 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/PawelK2012/go-crud/database"
 	"github.com/PawelK2012/go-crud/models"
 	"github.com/gorilla/mux"
 )
 
 type APIServer struct {
 	listenAddr string
-	store      Store
+	db         database.ClientInterface
 }
 
 type ApiError struct {
 	Error string `json:"error"`
 }
 
-func NewAPIServer(listenAddr string, store Store) *APIServer {
+func NewAPIServer(listenAddr string, db database.ClientInterface) *APIServer {
 	return &APIServer{
 		listenAddr: listenAddr,
-		store:      store,
+		db:         db,
 	}
 }
 
@@ -46,12 +47,24 @@ func WriteJSON(w http.ResponseWriter, status int, v any) error {
 
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
-	router.HandleFunc("/notes", makeHTTPHandleFunc(s.handleMenu))
+	router.HandleFunc("/note", makeHTTPHandleFunc(s.handleNote))
+	router.HandleFunc("/notes", makeHTTPHandleFunc(s.handleNotes))
+	err := http.ListenAndServe(s.listenAddr, router)
+	if err != nil {
+		panic(err)
+	}
 	log.Println("server running on port: ", s.listenAddr)
-	http.ListenAndServe(s.listenAddr, router)
 }
 
-func (s *APIServer) handleMenu(w http.ResponseWriter, r *http.Request) error {
+func (s *APIServer) handleNotes(w http.ResponseWriter, r *http.Request) error {
+	if r.Method == "GET" {
+		log.Println("GET notes API")
+		return s.handleGetAllNotes(w, r)
+	}
+	return fmt.Errorf("method not allowed %s", r.Method)
+}
+
+func (s *APIServer) handleNote(w http.ResponseWriter, r *http.Request) error {
 
 	if r.Method == "GET" {
 		log.Println("GET note API")
@@ -59,6 +72,7 @@ func (s *APIServer) handleMenu(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if r.Method == "POST" {
+		log.Println("POST note API")
 		return s.handleCreateNote(w, r)
 	}
 	return fmt.Errorf("method not allowed %s", r.Method)
@@ -68,7 +82,7 @@ func (s *APIServer) handleMenu(w http.ResponseWriter, r *http.Request) error {
 func (s *APIServer) handleGetMenuByID(w http.ResponseWriter, r *http.Request) error {
 
 	menuId := 1
-	menu, err := s.store.GetNoteById(menuId)
+	menu, err := s.db.GetNoteById(r.Context(), menuId)
 	if err != nil {
 		formattedErr := fmt.Errorf("menu not found %s", err)
 		log.Print(formattedErr)
@@ -78,16 +92,29 @@ func (s *APIServer) handleGetMenuByID(w http.ResponseWriter, r *http.Request) er
 	return WriteJSON(w, http.StatusOK, menu)
 }
 
+// add r.Body validation
 func (s *APIServer) handleCreateNote(w http.ResponseWriter, r *http.Request) error {
-	// note := models.Note{}
-	note := new(models.Note)
+	note := &models.Note{}
 	if err := json.NewDecoder(r.Body).Decode(note); err != nil {
+		log.Println("failed decoding user payload", err)
 		return err
 	}
 
 	newNote := models.NewNote(note.Author, note.Title, note.Desc, note.Tags)
-	if err := s.store.CreateNote(newNote); err != nil {
+	n, err := s.db.Create(r.Context(), newNote)
+	if err != nil {
 		return err
 	}
-	return WriteJSON(w, http.StatusOK, note)
+	newNote.Id = n
+
+	return WriteJSON(w, http.StatusOK, newNote)
+}
+
+func (s *APIServer) handleGetAllNotes(w http.ResponseWriter, r *http.Request) error {
+	n, err := s.db.GetAll(r.Context())
+	if err != nil {
+		return err
+	}
+
+	return WriteJSON(w, http.StatusOK, n)
 }
