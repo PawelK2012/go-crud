@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/PawelK2012/go-crud/models"
 )
@@ -26,6 +27,10 @@ func (client *PostgressClientMock) GetNoteById(ctx context.Context, id int) (*mo
 	return nil, nil
 }
 
-func (client *PostgressClientMock) CreateNote(ctx context.Context, note *models.Note) error {
-	return nil
+func (client *PostgressClientMock) Create(ctx context.Context, table string, note *models.Note) (int64, error) {
+	return 1, nil
+}
+
+func (client *PostgressClientMock) GetAll(ctx context.Context, table string) (*sql.Rows, error) {
+	return nil, nil
 }

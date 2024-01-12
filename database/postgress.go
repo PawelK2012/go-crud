@@ -38,33 +38,57 @@ func NewPostgressClient() (ClientInterface, error) {
 }
 
 func (s *Postgres) Init(ctx context.Context) error {
-	return s.CreateNoteTable()
-}
-
-func (s *Postgres) CreateNoteTable() error {
-	query := `create table if not exists notes (
-		id serial primary key,
-		author varchar(200),
-		title varchar(250),
-		description varchar(5000),
-		tags varchar(250),
-		created_at timestamp
+	query := `CREATE TABLE IF NOT EXISTS notes (
+		id SERIAL PRIMARY KEY,
+		author VARCHAR(200),
+		title VARCHAR(250),
+		description VARCHAR(5000),
+		tags VARCHAR(250),
+		created_at TIMESTAMP
 	)`
-	_, err := s.db.Exec(query)
+	_, err := s.db.ExecContext(ctx, query)
 	return err
 }
-
-func (s *Postgres) CreateNote(ctx context.Context, n *models.Note) error {
-	query := `insert into notes
-	(author, title, description, tags, created_at)
-	values ($1, $2, $3, $4, $5)`
-
-	_, err := s.db.Query(query, n.Author, n.Title, n.Desc, n.Tags, n.CreatedAt)
+func (s *Postgres) GetAll(ctx context.Context, table string) (*sql.Rows, error) {
+	var all map[string]interface{}
+	//all := ClientDBResult{}
+	query := `SELECT * FROM ` + table
+	rows, err := s.db.QueryContext(ctx, query)
 	if err != nil {
-		return err
+		log.Println("get all docs failed:", err)
+		return nil, err
 	}
-	// log.Printf("resp:  %+v\n", resp())
-	return nil
+	defer rows.Close()
+	for rows.Next() {
+		//var s []string
+		if err := rows.Scan(all); err != nil {
+			log.Println("get all rows.Scan() error:", err)
+			return nil, err
+		}
+		// all = append(all.Documents, Document{
+		// 	Id:         *createDocumentResponse.ID,
+		// 	Properties: document,
+		// })
+	}
+	fmt.Printf("---> retrived rows 111 %+v\n", rows)
+	return rows, nil
+}
+
+// TODO: think about better approche for CREATE operations
+func (s *Postgres) Create(ctx context.Context, table string, n *models.Note) (int64, error) {
+	var id int64
+	query := `INSERT INTO ` + table + `
+	(author, title, description, tags, created_at)
+	VALUES ($1, $2, $3, $4, $5) RETURNING id`
+
+	err := s.db.QueryRowContext(ctx, query, n.Author, n.Title, n.Desc, n.Tags, n.CreatedAt).Scan(&id)
+	if err != nil {
+		log.Println("creating note failed with error:", err)
+		return id, err
+	}
+	n.Id = id
+	log.Printf("note id:%s was created", id)
+	return id, nil
 }
 
 func (s *Postgres) GetNoteById(ctx context.Context, id int) (*models.Note, error) {

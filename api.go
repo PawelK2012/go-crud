@@ -47,7 +47,8 @@ func WriteJSON(w http.ResponseWriter, status int, v any) error {
 
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
-	router.HandleFunc("/notes", makeHTTPHandleFunc(s.handleMenu))
+	router.HandleFunc("/note", makeHTTPHandleFunc(s.handleNote))
+	router.HandleFunc("/notes", makeHTTPHandleFunc(s.handleNotes))
 	err := http.ListenAndServe(s.listenAddr, router)
 	if err != nil {
 		panic(err)
@@ -55,7 +56,15 @@ func (s *APIServer) Run() {
 	log.Println("server running on port: ", s.listenAddr)
 }
 
-func (s *APIServer) handleMenu(w http.ResponseWriter, r *http.Request) error {
+func (s *APIServer) handleNotes(w http.ResponseWriter, r *http.Request) error {
+	if r.Method == "GET" {
+		log.Println("GET notes API")
+		return s.handleGetAllNotes(w, r)
+	}
+	return fmt.Errorf("method not allowed %s", r.Method)
+}
+
+func (s *APIServer) handleNote(w http.ResponseWriter, r *http.Request) error {
 
 	if r.Method == "GET" {
 		log.Println("GET note API")
@@ -87,12 +96,24 @@ func (s *APIServer) handleGetMenuByID(w http.ResponseWriter, r *http.Request) er
 func (s *APIServer) handleCreateNote(w http.ResponseWriter, r *http.Request) error {
 	note := &models.Note{}
 	if err := json.NewDecoder(r.Body).Decode(note); err != nil {
+		log.Println("failed decoding user payload", err)
 		return err
 	}
 
 	newNote := models.NewNote(note.Author, note.Title, note.Desc, note.Tags)
-	if err := s.repository.Postgress.CreateNote(r.Context(), newNote); err != nil {
+	n, err := s.repository.CreateNote(r.Context(), newNote)
+	if err != nil {
 		return err
 	}
-	return WriteJSON(w, http.StatusOK, newNote)
+
+	return WriteJSON(w, http.StatusOK, n)
+}
+
+func (s *APIServer) handleGetAllNotes(w http.ResponseWriter, r *http.Request) error {
+	n, err := s.repository.GetAllNotes(r.Context())
+	if err != nil {
+		return err
+	}
+
+	return WriteJSON(w, http.StatusOK, n)
 }
