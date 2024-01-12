@@ -16,4 +16,8 @@ Unfortunately I was not able to implement this with Postgress because of a natur
   -f "{{json .NetworkSettings.Networks }}" `
 2. Start service with `make run` command
 
+## TODO
+1. Add tests
+2. Finish Postgress CRUD
+
 
