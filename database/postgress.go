@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -53,6 +54,23 @@ func (s *Postgress) Init(ctx context.Context) error {
 	_, err := s.db.ExecContext(ctx, query)
 	return err
 }
+
+// TODO: think about better approche for CREATE operations
+func (s *Postgress) Create(ctx context.Context, n models.Note) (int64, error) {
+	var id int64
+	query := `INSERT INTO ` + NOTES_TBL + `
+	(author, title, description, tags, created_at)
+	VALUES ($1, $2, $3, $4, $5) RETURNING id`
+
+	err := s.db.QueryRowContext(ctx, query, n.Author, n.Title, n.Desc, n.Tags, n.CreatedAt).Scan(&id)
+	if err != nil {
+		log.Println("creating note failed with error:", err)
+		return id, err
+	}
+	n.Id = id
+	return id, nil
+}
+
 func (s *Postgress) GetAll(ctx context.Context) ([]models.Note, error) {
 
 	query := `SELECT * FROM ` + NOTES_TBL
@@ -73,50 +91,31 @@ func (s *Postgress) GetAll(ctx context.Context) ([]models.Note, error) {
 	return all, nil
 }
 
-// TODO: think about better approche for CREATE operations
-func (s *Postgress) Create(ctx context.Context, n *models.Note) (int64, error) {
-	var id int64
-	query := `INSERT INTO ` + NOTES_TBL + `
-	(author, title, description, tags, created_at)
-	VALUES ($1, $2, $3, $4, $5) RETURNING id`
-
-	err := s.db.QueryRowContext(ctx, query, n.Author, n.Title, n.Desc, n.Tags, n.CreatedAt).Scan(&id)
-	if err != nil {
-		log.Println("creating note failed with error:", err)
-		return id, err
+func (s *Postgress) GetById(ctx context.Context, id int) (models.Note, error) {
+	log.Println("getting note by id", id)
+	var note models.Note
+	query := `SELECT * FROM ` + NOTES_TBL + ` WHERE id = $1`
+	row := s.db.QueryRowContext(ctx, query, id)
+	if err := row.Scan(&note.Id, &note.Title, &note.Desc, &note.Author, &note.Tags, &note.CreatedAt); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return note, fmt.Errorf("note %d not found", id)
+		}
+		return note, err
 	}
-	n.Id = id
-	return id, nil
+
+	return note, nil
 }
 
-func (s *Postgress) GetNoteById(ctx context.Context, id int) (*models.Note, error) {
-
-	rows, err := s.db.Query(`select * from note`)
-	if err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		// return scanIntoMenu(rows)
-	}
-
-	return nil, fmt.Errorf("menu %d not found", id)
-}
-
-// func scanIntoMenu(rows *sql.Rows) (*models.Menu, error) {
-// 	menu := new(models.Menu)
+// func scanRows(rows *sql.Rows) (*models.Note, error) {
+// 	n := new(models.Note)
 // 	err := rows.Scan(
-// 		&menu.ID,
-// 		&menu.MenuName,
-// 		&menu.Breakfast,
-// 		&menu.LargeBreakfast,
-// 		&menu.Lunch,
-// 		&menu.LargeLunch,
-// 		&menu.Dinner,
-// 		&menu.LargeDinner,
-// 		&menu.KidsMenu,
-// 		&menu.Desert,
-// 		&menu.Drink,
-// 		&menu.Sides)
+// 		&n.Id,
+// 		&n.Title,
+// 		&n.Desc,
+// 		&n.Tags,
+// 		&n.Author,
+// 		&n.CreatedAt,
+// 	)
 
-// 	return menu, err
+// 	return n, err
 // }
