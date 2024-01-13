@@ -22,11 +22,12 @@ func (client *PostgressClientMock) Init(ctx context.Context) error {
 	return nil
 }
 
-func (client *PostgressClientMock) GetNoteById(ctx context.Context, id int) (*models.Note, error) {
-	return nil, nil
+func (client *PostgressClientMock) GetById(ctx context.Context, id int) (models.Note, error) {
+	var n models.Note
+	return n, nil
 }
 
-func (client *PostgressClientMock) Create(ctx context.Context, note *models.Note) (int64, error) {
+func (client *PostgressClientMock) Create(ctx context.Context, note models.Note) (int64, error) {
 	return 1, nil
 }
 

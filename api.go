@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/PawelK2012/go-crud/database"
 	"github.com/PawelK2012/go-crud/models"
@@ -68,7 +69,7 @@ func (s *APIServer) handleNote(w http.ResponseWriter, r *http.Request) error {
 
 	if r.Method == "GET" {
 		log.Println("GET note API")
-		return s.handleGetMenuByID(w, r)
+		return s.handleGetNoteByID(w, r)
 	}
 
 	if r.Method == "POST" {
@@ -79,14 +80,18 @@ func (s *APIServer) handleNote(w http.ResponseWriter, r *http.Request) error {
 
 }
 
-func (s *APIServer) handleGetMenuByID(w http.ResponseWriter, r *http.Request) error {
+func (s *APIServer) handleGetNoteByID(w http.ResponseWriter, r *http.Request) error {
 
-	menuId := 1
-	menu, err := s.db.GetNoteById(r.Context(), menuId)
+	id := r.URL.Query().Get("id")
+	i, err := strconv.Atoi(id)
 	if err != nil {
-		formattedErr := fmt.Errorf("menu not found %s", err)
-		log.Print(formattedErr)
-		return formattedErr
+		log.Println("failed converting URL", err)
+		panic(err)
+	}
+	menu, err := s.db.GetById(r.Context(), i)
+	if err != nil {
+		log.Print(err)
+		return err
 
 	}
 	return WriteJSON(w, http.StatusOK, menu)
@@ -101,7 +106,7 @@ func (s *APIServer) handleCreateNote(w http.ResponseWriter, r *http.Request) err
 	}
 
 	newNote := models.NewNote(note.Author, note.Title, note.Desc, note.Tags)
-	n, err := s.db.Create(r.Context(), newNote)
+	n, err := s.db.Create(r.Context(), *newNote)
 	if err != nil {
 		return err
 	}

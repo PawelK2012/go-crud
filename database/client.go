@@ -18,8 +18,8 @@ var (
 // This allow each DB SDK to be wrapped in a ClientInterface ie. Postgress, Redis etc
 type ClientInterface interface {
 	Init(ctx context.Context) error
-	GetNoteById(ctx context.Context, id int) (*models.Note, error)
-	Create(ctx context.Context, note *models.Note) (int64, error)
+	GetById(ctx context.Context, id int) (models.Note, error)
+	Create(ctx context.Context, note models.Note) (int64, error)
 	GetAll(ctx context.Context) ([]models.Note, error)
 }
 
