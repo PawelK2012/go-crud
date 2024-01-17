@@ -1,4 +1,4 @@
-package database
+package repository
 
 import (
 	"context"
@@ -14,21 +14,11 @@ var (
 	ErrDeleteFailed = errors.New("delete failed")
 )
 
-// ClientInterface implements commond DB client methods
-// This allow each DB SDK to be wrapped in a ClientInterface ie. Postgress, Redis etc
-type ClientInterface interface {
+// Repository implements commond DB client methods
+// This allow each DB SDK to be wrapped in a Repository ie. Postgress, Redis etc
+type Repository interface {
 	Init(ctx context.Context) error
 	GetById(ctx context.Context, id int) (models.Note, error)
 	Create(ctx context.Context, note models.Note) (int64, error)
 	GetAll(ctx context.Context) ([]models.Note, error)
-}
-
-type Document struct {
-	Id         string
-	Properties map[string]interface{}
-}
-type ClientDBResult struct {
-	Documents  []Document
-	Err        error
-	StatusCode int
 }

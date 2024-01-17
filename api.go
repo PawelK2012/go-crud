@@ -7,24 +7,24 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/PawelK2012/go-crud/database"
 	"github.com/PawelK2012/go-crud/models"
+	"github.com/PawelK2012/go-crud/repository"
 	"github.com/gorilla/mux"
 )
 
 type APIServer struct {
 	listenAddr string
-	db         database.ClientInterface
+	repo       repository.Repository
 }
 
 type ApiError struct {
 	Error string `json:"error"`
 }
 
-func NewAPIServer(listenAddr string, db database.ClientInterface) *APIServer {
+func NewAPIServer(listenAddr string, repo repository.Repository) *APIServer {
 	return &APIServer{
 		listenAddr: listenAddr,
-		db:         db,
+		repo:       repo,
 	}
 }
 
@@ -88,7 +88,7 @@ func (s *APIServer) handleGetNoteByID(w http.ResponseWriter, r *http.Request) er
 		log.Println("failed converting URL", err)
 		panic(err)
 	}
-	menu, err := s.db.GetById(r.Context(), i)
+	menu, err := s.repo.GetById(r.Context(), i)
 	if err != nil {
 		log.Print(err)
 		return err
@@ -106,7 +106,7 @@ func (s *APIServer) handleCreateNote(w http.ResponseWriter, r *http.Request) err
 	}
 
 	newNote := models.NewNote(note.Author, note.Title, note.Desc, note.Tags)
-	n, err := s.db.Create(r.Context(), *newNote)
+	n, err := s.repo.Create(r.Context(), *newNote)
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func (s *APIServer) handleCreateNote(w http.ResponseWriter, r *http.Request) err
 }
 
 func (s *APIServer) handleGetAllNotes(w http.ResponseWriter, r *http.Request) error {
-	n, err := s.db.GetAll(r.Context())
+	n, err := s.repo.GetAll(r.Context())
 	if err != nil {
 		return err
 	}

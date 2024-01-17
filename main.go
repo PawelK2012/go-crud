@@ -4,18 +4,16 @@ import (
 	"log"
 	"os"
 
-	"github.com/PawelK2012/go-crud/database"
+	"github.com/PawelK2012/go-crud/repository"
 )
 
 func main() {
-	db, err := database.NewPostgressClient()
+	repo, err := repository.NewPostgress()
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
 
-	log.Printf("%+v\n", db)
-
-	server := NewAPIServer(":3000", db)
+	server := NewAPIServer(":3000", repo)
 	server.Run()
 }

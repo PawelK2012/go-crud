@@ -1,4 +1,4 @@
-package database
+package repository
 
 import (
 	"context"
@@ -25,7 +25,7 @@ type Postgress struct {
 	db *sql.DB
 }
 
-func NewPostgressClient() (ClientInterface, error) {
+func NewPostgress() (Repository, error) {
 	connStr := fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", DB_USER, DB_USER, DB_PASSWORD)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
@@ -105,17 +105,3 @@ func (s *Postgress) GetById(ctx context.Context, id int) (models.Note, error) {
 
 	return note, nil
 }
-
-// func scanRows(rows *sql.Rows) (*models.Note, error) {
-// 	n := new(models.Note)
-// 	err := rows.Scan(
-// 		&n.Id,
-// 		&n.Title,
-// 		&n.Desc,
-// 		&n.Tags,
-// 		&n.Author,
-// 		&n.CreatedAt,
-// 	)
-
-// 	return n, err
-// }
