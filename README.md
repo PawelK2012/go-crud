@@ -1,6 +1,8 @@
 # GO CRUD API
 
-This is an example of simple GO ***TO DO*** App build with repository pattern. Fell free to use it as an template for yor non prod personal project! 
+[![Go](https://github.com/PawelK2012/go-crud/actions/workflows/go.yml/badge.svg)](https://github.com/PawelK2012/go-crud/actions/workflows/go.yml)
+
+This is an example of simple GO ***TO DO*** App build with repository pattern. Fell free to use it as a template for your ***non prod*** personal project! 
 
 ### Keywords
 - GO Server 
@@ -23,6 +25,10 @@ This is an example of simple GO ***TO DO*** App build with repository pattern. F
 ## Test
 
 Exec `Make test` in terminal
+
+## Code coverage
+
+Exec `Make coverage` in terminal
 
 ## TODO
 1. Add tests
