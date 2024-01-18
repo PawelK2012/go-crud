@@ -4,11 +4,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/PawelK2012/go-crud/repository"
+	"github.com/PawelK2012/go-crud/repository/postgress"
 )
 
 func main() {
-	repo, err := repository.NewPostgress()
+	repo, err := postgress.NewPostgress()
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
