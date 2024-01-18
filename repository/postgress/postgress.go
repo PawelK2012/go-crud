@@ -56,7 +56,6 @@ func (s *Postgress) Init(ctx context.Context) error {
 	return err
 }
 
-// TODO: think about better approche for CREATE operations
 func (s *Postgress) Create(ctx context.Context, n models.Note) (int64, error) {
 	var id int64
 	query := `INSERT INTO ` + NOTES_TBL + `

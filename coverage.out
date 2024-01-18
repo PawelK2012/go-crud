@@ -1,0 +1,22 @@
+mode: set
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:29.52,32.16 3 0
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:32.16,35.3 2 0
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:37.2,37.34 1 0
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:37.34,39.3 1 0
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:41.2,43.8 1 0
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:46.53,57.2 3 0
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:59.79,66.16 4 0
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:66.16,69.3 2 0
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:70.2,71.16 2 0
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:74.72,78.16 3 0
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:78.16,81.3 2 0
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:82.2,84.18 3 0
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:84.18,86.113 2 0
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:86.113,88.4 1 0
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:89.3,89.26 1 0
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:91.2,91.17 1 0
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:94.79,99.111 5 1
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:99.111,100.36 1 1
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:100.36,102.4 1 1
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:103.3,103.19 1 0
+github.com/PawelK2012/go-crud/repository/postgress/postgress.go:106.2,106.18 1 1
