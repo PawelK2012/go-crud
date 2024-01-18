@@ -1,10 +1,14 @@
 # GO CRUD API
 
-This is an example of simple GO API TO DO App build with repository pattern.
-- Server API
+This is an example of simple GO ***TO DO*** App build with repository pattern. Fell free to use it as an template for yor non prod personal project! 
+
+### Keywords
+- GO Server 
+- API
 - CRUD
 - Postgress
 - Repository pattern
+- Unit test
 
 ## How to start project
 
@@ -23,5 +27,7 @@ Exec `Make test` in terminal
 ## TODO
 1. Add tests
 2. Finish Postgress CRUD
+3. Add front end
+4. Add in memory DB or other DB type
 
 
