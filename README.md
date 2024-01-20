@@ -37,5 +37,6 @@ Exec `Make coverage` in terminal
 2. Finish Postgres CRUD
 3. Add front end
 4. Add in memory DB or other DB type
+5. Build Docker image
 
 
