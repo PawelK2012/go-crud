@@ -158,7 +158,7 @@ func TestPostgress_Create(t *testing.T) {
 				db: tt.fields.db,
 			}
 
-			//using regexp.QuoteMeta() as otherwise SQL doesn't match
+			//using regexp.QuoteMeta() as otherwise SQL query doesn't match
 			mock.ExpectQuery(regexp.QuoteMeta(tt.args.query)).
 				WithArgs(tt.args.n.Author, tt.args.n.Title, tt.args.n.Desc, tt.args.n.Tags, tt.args.n.CreatedAt).
 				WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(22))
