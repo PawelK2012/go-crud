@@ -2,6 +2,8 @@
 
 [![Go](https://github.com/PawelK2012/go-crud/actions/workflows/go.yml/badge.svg)](https://github.com/PawelK2012/go-crud/actions/workflows/go.yml)
 
+[![Go Coverage](https://github.com/USER/REPO/wiki/coverage.svg)](https://raw.githack.com/wiki/USER/REPO/coverage.html)
+
 This is an example of simple GO ***TO DO*** App build with repository pattern. Fell free to use it as a template for your ***non prod*** personal project! 
 
 ### Keywords
