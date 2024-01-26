@@ -40,7 +40,6 @@ func makeHTTPHandleFunc(f apiFunc) http.HandlerFunc {
 }
 
 func WriteJSON(w http.ResponseWriter, status int, v any) error {
-
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(status)
 	return json.NewEncoder(w).Encode(v)
@@ -75,6 +74,11 @@ func (s *APIServer) handleNote(w http.ResponseWriter, r *http.Request) error {
 	if r.Method == "POST" {
 		log.Println("POST note API")
 		return s.handleCreateNote(w, r)
+	}
+	//using PUT for simplicity
+	if r.Method == "PUT" {
+		log.Println("PUT note API")
+		return s.handleUpdateNote(w, r)
 	}
 	return fmt.Errorf("method not allowed %s", r.Method)
 
@@ -113,6 +117,22 @@ func (s *APIServer) handleCreateNote(w http.ResponseWriter, r *http.Request) err
 	newNote.Id = n
 
 	return WriteJSON(w, http.StatusOK, newNote)
+}
+
+func (s *APIServer) handleUpdateNote(w http.ResponseWriter, r *http.Request) error {
+	id := r.URL.Query().Get("id")
+	note := &models.Note{}
+	if err := json.NewDecoder(r.Body).Decode(note); err != nil {
+		log.Println("failed decoding user payload", err)
+		return err
+	}
+
+	n, err := s.repo.Update(r.Context(), id, *note)
+	if err != nil {
+		return err
+	}
+
+	return WriteJSON(w, http.StatusOK, n)
 }
 
 func (s *APIServer) handleGetAllNotes(w http.ResponseWriter, r *http.Request) error {
