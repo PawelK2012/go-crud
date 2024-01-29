@@ -84,7 +84,7 @@ func (s *Postgress) Update(ctx context.Context, id string, n models.Note) (model
 	if err != nil {
 		return n, err
 	}
-	// revie returned err
+
 	if rowsAffected == 0 {
 		return n, repository.ErrUpdateFailed
 	}
