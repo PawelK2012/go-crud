@@ -67,8 +67,30 @@ func (s *Postgress) Create(ctx context.Context, n models.Note) (int64, error) {
 		log.Println("creating note failed with error:", err)
 		return id, err
 	}
-	n.Id = id
 	return id, nil
+}
+
+func (s *Postgress) Update(ctx context.Context, id string, n models.Note) (models.Note, error) {
+	fmt.Printf("---> PATCH NOTE %+v\n", n)
+	query := "UPDATE notes SET author = $1, title = $2, description = $3, tags = $4 WHERE id = $5"
+	res, err := s.db.ExecContext(ctx, query, n.Author, n.Title, n.Desc, n.Tags, id)
+
+	if err != nil {
+		log.Println("updating note failed with error:", err)
+		return n, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return n, err
+	}
+
+	if rowsAffected == 0 {
+		return n, repository.ErrUpdateFailed
+	}
+
+	return n, nil
+
 }
 
 func (s *Postgress) GetAll(ctx context.Context) ([]models.Note, error) {
