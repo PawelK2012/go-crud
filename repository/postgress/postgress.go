@@ -71,7 +71,6 @@ func (s *Postgress) Create(ctx context.Context, n models.Note) (int64, error) {
 }
 
 func (s *Postgress) Update(ctx context.Context, id string, n models.Note) (models.Note, error) {
-	fmt.Printf("---> PATCH NOTE %+v\n", n)
 	query := "UPDATE notes SET author = $1, title = $2, description = $3, tags = $4 WHERE id = $5"
 	res, err := s.db.ExecContext(ctx, query, n.Author, n.Title, n.Desc, n.Tags, id)
 
@@ -90,11 +89,9 @@ func (s *Postgress) Update(ctx context.Context, id string, n models.Note) (model
 	}
 
 	return n, nil
-
 }
 
 func (s *Postgress) GetAll(ctx context.Context) ([]models.Note, error) {
-
 	query := `SELECT * FROM ` + NOTES_TBL
 	rows, err := s.db.QueryContext(ctx, query)
 	if err != nil {
