@@ -175,6 +175,86 @@ func TestPostgress_Create(t *testing.T) {
 	}
 }
 
+func TestPostgress_Update(t *testing.T) {
+	db, mock := newMock()
+	type fields struct {
+		db *sql.DB
+	}
+	testFields := fields{
+		db: db,
+	}
+	type args struct {
+		ctx          context.Context
+		id           string
+		n            models.Note
+		lastInsertID int64
+		rowsAffected int64
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    models.Note
+		wantErr bool
+	}{
+		{name: "GetAll happy flow", fields: testFields, args: args{ctx: context.Background(), lastInsertID: 1, rowsAffected: 1}},
+		{name: "GetAll sad flow", fields: testFields, args: args{ctx: context.Background(), lastInsertID: 0, rowsAffected: 0}, wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Postgress{
+				db: tt.fields.db,
+			}
+
+			mock.ExpectExec(regexp.QuoteMeta("UPDATE notes")).WillReturnResult(sqlmock.NewResult(tt.args.lastInsertID, tt.args.rowsAffected))
+
+			got, err := s.Update(tt.args.ctx, tt.args.id, tt.args.n)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Postgress.Update() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Postgress.Update() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPostgress_Init(t *testing.T) {
+	db, mock := newMock()
+	type fields struct {
+		db *sql.DB
+	}
+	testFields := fields{
+		db: db,
+	}
+	type args struct {
+		ctx          context.Context
+		lastInsertID int64
+		rowsAffected int64
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{name: "GetAll happy flow", fields: testFields, args: args{ctx: context.Background(), lastInsertID: 1, rowsAffected: 1}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Postgress{
+				db: tt.fields.db,
+			}
+			mock.ExpectExec(regexp.QuoteMeta("CREATE TABLE IF NOT EXISTS notes")).WillReturnResult(sqlmock.NewResult(tt.args.lastInsertID, tt.args.rowsAffected))
+
+			if err := s.Init(tt.args.ctx); (err != nil) != tt.wantErr {
+				t.Errorf("Postgress.Init() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func newMock() (*sql.DB, sqlmock.Sqlmock) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
