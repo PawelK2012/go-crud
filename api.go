@@ -80,6 +80,11 @@ func (s *APIServer) handleNote(w http.ResponseWriter, r *http.Request) error {
 		log.Println("PUT note API")
 		return s.handleUpdateNote(w, r)
 	}
+
+	if r.Method == "DELETE" {
+		log.Println("DELETE note API")
+		return s.handleDeleteNote(w, r)
+	}
 	return fmt.Errorf("method not allowed %s", r.Method)
 
 }
@@ -89,12 +94,12 @@ func (s *APIServer) handleGetNoteByID(w http.ResponseWriter, r *http.Request) er
 	id := r.URL.Query().Get("id")
 	i, err := strconv.Atoi(id)
 	if err != nil {
-		log.Println("failed converting URL", err)
+		log.Println("failed parsing ID", err)
 		panic(err)
 	}
 	menu, err := s.repo.GetById(r.Context(), i)
 	if err != nil {
-		log.Print(err)
+		log.Println("get note by ID failed with error:", err)
 		return err
 
 	}
@@ -112,6 +117,7 @@ func (s *APIServer) handleCreateNote(w http.ResponseWriter, r *http.Request) err
 	newNote := models.NewNote(note.Author, note.Title, note.Desc, note.Tags)
 	n, err := s.repo.Create(r.Context(), *newNote)
 	if err != nil {
+		log.Println("creating note failed with error:", err)
 		return err
 	}
 	newNote.Id = n
@@ -129,15 +135,34 @@ func (s *APIServer) handleUpdateNote(w http.ResponseWriter, r *http.Request) err
 
 	n, err := s.repo.Update(r.Context(), id, *note)
 	if err != nil {
+		log.Println("updating note failed with error:", err)
 		return err
 	}
 
 	return WriteJSON(w, http.StatusOK, n)
 }
 
+func (s *APIServer) handleDeleteNote(w http.ResponseWriter, r *http.Request) error {
+	id := r.URL.Query().Get("id")
+	i, err := strconv.Atoi(id)
+	if err != nil {
+		log.Println("failed parsing ID", err)
+		panic(err)
+	}
+
+	delID, err := s.repo.Delete(r.Context(), i)
+	if err != nil {
+		log.Println("deleting note failed with error:", err)
+		return err
+	}
+
+	return WriteJSON(w, http.StatusOK, delID)
+}
+
 func (s *APIServer) handleGetAllNotes(w http.ResponseWriter, r *http.Request) error {
 	n, err := s.repo.GetAll(r.Context())
 	if err != nil {
+		log.Println("get all notes failed with error:", err)
 		return err
 	}
 

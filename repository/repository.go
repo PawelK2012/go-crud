@@ -21,7 +21,8 @@ var (
 type Repository interface {
 	Init(ctx context.Context) error
 	GetById(ctx context.Context, id int) (models.Note, error)
+	GetAll(ctx context.Context) ([]models.Note, error)
 	Create(ctx context.Context, note models.Note) (int64, error)
 	Update(ctx context.Context, id string, note models.Note) (models.Note, error)
-	GetAll(ctx context.Context) ([]models.Note, error)
+	Delete(ctx context.Context, id int) (int, error)
 }

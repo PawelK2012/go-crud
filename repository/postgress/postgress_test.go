@@ -239,7 +239,7 @@ func TestPostgress_Init(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{name: "GetAll happy flow", fields: testFields, args: args{ctx: context.Background(), lastInsertID: 1, rowsAffected: 1}},
+		{name: "Init happy flow", fields: testFields, args: args{ctx: context.Background(), lastInsertID: 1, rowsAffected: 1}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
