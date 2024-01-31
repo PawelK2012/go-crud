@@ -35,7 +35,7 @@ func NewPostgress() (repository.Repository, error) {
 	m := make(map[string]string)
 	for _, e := range os.Environ() {
 		if i := strings.Index(e, "="); i >= 0 {
-			log.Printf("env: %+v\n", i, e)
+			log.Printf("env: %+v\n", e)
 			m[e[:i]] = e[i+1:]
 		}
 	}
