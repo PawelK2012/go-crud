@@ -56,41 +56,6 @@ func (s *Postgress) Init(ctx context.Context) error {
 	return err
 }
 
-func (s *Postgress) Create(ctx context.Context, n models.Note) (int64, error) {
-	var id int64
-	query := `INSERT INTO ` + NOTES_TBL + `
-	(author, title, description, tags, created_at)
-	VALUES ($1, $2, $3, $4, $5) RETURNING id`
-
-	err := s.db.QueryRowContext(ctx, query, n.Author, n.Title, n.Desc, n.Tags, n.CreatedAt).Scan(&id)
-	if err != nil {
-		log.Println("creating note failed with error:", err)
-		return id, err
-	}
-	return id, nil
-}
-
-func (s *Postgress) Update(ctx context.Context, id string, n models.Note) (models.Note, error) {
-	query := "UPDATE notes SET author = $1, title = $2, description = $3, tags = $4 WHERE id = $5"
-	res, err := s.db.ExecContext(ctx, query, n.Author, n.Title, n.Desc, n.Tags, id)
-
-	if err != nil {
-		log.Println("updating note failed with error:", err)
-		return n, err
-	}
-
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return n, err
-	}
-
-	if rowsAffected == 0 {
-		return n, repository.ErrUpdateFailed
-	}
-
-	return n, nil
-}
-
 func (s *Postgress) GetAll(ctx context.Context) ([]models.Note, error) {
 	query := `SELECT * FROM ` + NOTES_TBL
 	rows, err := s.db.QueryContext(ctx, query)
@@ -123,4 +88,57 @@ func (s *Postgress) GetById(ctx context.Context, id int) (models.Note, error) {
 	}
 
 	return note, nil
+}
+
+func (s *Postgress) Create(ctx context.Context, n models.Note) (int64, error) {
+	var id int64
+	query := `INSERT INTO ` + NOTES_TBL + `
+	(author, title, description, tags, created_at)
+	VALUES ($1, $2, $3, $4, $5) RETURNING id`
+
+	err := s.db.QueryRowContext(ctx, query, n.Author, n.Title, n.Desc, n.Tags, n.CreatedAt).Scan(&id)
+	if err != nil {
+		return id, err
+	}
+	return id, nil
+}
+
+func (s *Postgress) Update(ctx context.Context, id string, n models.Note) (models.Note, error) {
+	query := "UPDATE notes SET author = $1, title = $2, description = $3, tags = $4 WHERE id = $5"
+	res, err := s.db.ExecContext(ctx, query, n.Author, n.Title, n.Desc, n.Tags, id)
+
+	if err != nil {
+		return n, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return n, err
+	}
+
+	if rowsAffected == 0 {
+		return n, repository.ErrUpdateFailed
+	}
+
+	return n, nil
+}
+
+func (s *Postgress) Delete(ctx context.Context, id int) (int, error) {
+	query := "DELETE FROM notes WHERE id = $1"
+	res, err := s.db.ExecContext(ctx, query, id)
+
+	if err != nil {
+		return id, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return id, err
+	}
+
+	if rowsAffected == 0 {
+		return id, repository.ErrDeleteFailed
+	}
+
+	return id, nil
 }
