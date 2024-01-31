@@ -27,6 +27,8 @@ type Postgress struct {
 }
 
 func NewPostgress() (repository.Repository, error) {
+	log.Println("db0:", os.Getenv("POSTGRES_USER_CRUDAPP"), os.Getenv("POSTGRES_PASSWORD_CRUDAPP"))
+	log.Println("db1:", DB_USER, DB_PASSWORD)
 	connStr := fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", DB_USER, DB_USER, DB_PASSWORD)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
