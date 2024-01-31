@@ -30,11 +30,13 @@ func NewPostgress() (repository.Repository, error) {
 	connStr := fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", DB_USER, DB_USER, DB_PASSWORD)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
+		log.Println("db connection failed", err)
 		log.Fatal(err)
 		return nil, err
 	}
 
 	if err := db.Ping(); err != nil {
+		log.Println("ping failed", err)
 		return nil, err
 	}
 
