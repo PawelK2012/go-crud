@@ -30,8 +30,9 @@ type Postgress struct {
 func NewPostgress() (repository.Repository, error) {
 	log.Println("db0:", os.Getenv("POSTGRES_USER_CRUDAPP"), os.Getenv("POSTGRES_PASSWORD_CRUDAPP"))
 	log.Println("db1:", DB_USER, DB_PASSWORD)
-	connStr := fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", DB_USER, DB_USER, DB_PASSWORD)
+	connStr := fmt.Sprintf("user=%s dbname=%s password=%s host=postgresql sslmode=disable", DB_USER, DB_USER, DB_PASSWORD)
 
+	log.Println("connStr:", connStr)
 	m := make(map[string]string)
 	for _, e := range os.Environ() {
 		if i := strings.Index(e, "="); i >= 0 {
