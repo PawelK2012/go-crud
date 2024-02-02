@@ -184,11 +184,10 @@ func TestPostgress_Update(t *testing.T) {
 		db: db,
 	}
 	type args struct {
-		ctx          context.Context
-		id           string
-		n            models.Note
-		lastInsertID int64
-		rowsAffected int64
+		ctx                        context.Context
+		id                         string
+		n                          models.Note
+		lastInsertID, rowsAffected int64
 	}
 	tests := []struct {
 		name    string
@@ -215,6 +214,48 @@ func TestPostgress_Update(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Postgress.Update() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPostgress_Delete(t *testing.T) {
+	db, mock := newMock()
+	type fields struct {
+		db *sql.DB
+	}
+	testFields := fields{
+		db: db,
+	}
+	type args struct {
+		ctx                        context.Context
+		id                         int
+		lastInsertID, rowsAffected int64
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{name: "Init happy flow", fields: testFields, args: args{ctx: context.Background(), id: 11, lastInsertID: 1, rowsAffected: 1}, want: 11},
+		{name: "Init sad flow", fields: testFields, args: args{ctx: context.Background(), id: 11, lastInsertID: 1, rowsAffected: 0}, wantErr: true, want: 11},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Postgress{
+				db: tt.fields.db,
+			}
+			mock.ExpectExec(regexp.QuoteMeta("DELETE FROM notes")).WillReturnResult(sqlmock.NewResult(tt.args.lastInsertID, tt.args.rowsAffected))
+
+			got, err := s.Delete(tt.args.ctx, tt.args.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Postgress.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Postgress.Delete() = %v, want %v", got, tt.want)
 			}
 		})
 	}
