@@ -30,7 +30,7 @@ Exec `Make test` in terminal
 
 ## Code coverage
 
-Exec `Make coverage` in terminal
+Exec `Make cover` in terminal
 
 ## TODO
 1. Add tests
