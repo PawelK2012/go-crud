@@ -27,6 +27,7 @@ type Postgress struct {
 }
 
 func NewPostgress() (repository.Repository, error) {
+	// remove host=postgresql when running localy
 	connStr := fmt.Sprintf("user=%s dbname=%s password=%s host=postgresql sslmode=disable", DB_USER, DB_USER, DB_PASSWORD)
 	log.Println("connStr:", connStr)
 
